@@ -36,5 +36,20 @@ Il sistema permette:
    
 4. **Avviare il Server:** 
 
-   ```bash
-   npm install 
+      ```bash
+      npm install
+L'applicazione sarà accessibile all'indirizzo http://localhost:3000.
+
+## API Endpoints
+- /api/auth:
+Gestione della registrazione, login e autenticazione tramite JWT.
+
+- /api/events:
+Endpoint per la gestione degli eventi (creazione, lettura, aggiornamento e cancellazione).
+
+- /api/tickets:
+Endpoint per la prenotazione e gestione dei biglietti.
+
+## Diritti di creazione
+  Leonardo Sanarighi – Svilupatore fullstack /Team 9 
+  Valeria Mocci – Team Leader e Svilupatrice /Team 9
