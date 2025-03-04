@@ -19,6 +19,22 @@ Il sistema permette:
 ## Installazione e Configurazione
 
 1. **Clonare il Repository:**
+
    ```bash
    git clone https://github.com/Sonomorto/TiketTwo.git
    cd TiketTwo
+
+2. **Installare le Dipendenze:**
+
+   ```bash
+   npm install
+
+3. **Configurare il Database:**
+
+ - Creare un database MySQL.
+ - Aggiornare il file di configurazione (es. .env o config.js) con le credenziali corrette.
+   
+4. **Avviare il Server:** 
+
+   ```bash
+   npm install 
