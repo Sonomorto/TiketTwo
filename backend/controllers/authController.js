@@ -51,6 +51,34 @@ export const register = async (req, res) => {
   }
 };
 
+// Funzione per ottenere il profilo utente
+export const getProfile = async (req, res) => {
+  try {
+      const user = await findUserById(req.user.id);
+      
+      if (!user) {
+          return res.status(404).json({ 
+              status: 'error',
+              message: 'Utente non trovato' 
+          });
+      }
+
+      // Rimuovi i campi sensibili dalla risposta
+      const { password, ...userData } = user;
+      
+      res.json({
+          status: 'success',
+          data: userData
+      });
+
+  } catch (error) {
+      res.status(500).json({
+          status: 'error',
+          message: 'Errore nel recupero del profilo'
+      });
+  }
+};
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -77,7 +105,7 @@ export const login = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
     );
 
-    // Rimuovi password dalla response
+   // Rimuovi password dalla response
     delete user.password;
 
     res.json({

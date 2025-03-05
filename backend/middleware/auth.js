@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import pool from '../config/db.js';
-import logger from '../utils/logger.js'; // Supponendo l'uso di un logger
+import logger from '../config/logger.js'; // Supponendo l'uso di un logger
 
 const authenticateUser = async (req, res, next) => {
     const authHeader = req.headers.authorization;
