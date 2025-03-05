@@ -5,9 +5,9 @@ import {
     deleteEvent 
   } from '../models/eventModel.js';
   
-  export const createNewEvent = async (req, res) => {
+  export const createEvent = async (req, res) => {
     try {
-      const newEvent = await createEvent({
+      const createNEEvent = await createEvent({
         ...req.body,
         organizer_id: req.user.id // ID dall'JWT
       });
