@@ -1,7 +1,5 @@
 .env
 
-node_modules/
-
-loggerMiddleware.js
+node_modules
 
 logger.js
