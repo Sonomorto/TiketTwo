@@ -1,0 +1,26 @@
+# Dipendenze
+node_modules/
+
+
+.env
+
+# Logs
+logs/
+
+
+# IDE
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Test/coverage
+coverage/
+.nyc_output/
+
+# Altro
+tmp/
+temp/
+*.sqlite
