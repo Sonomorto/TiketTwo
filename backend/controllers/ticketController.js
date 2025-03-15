@@ -1,65 +1,44 @@
-import { query } from '../config/db.js';
-import { logger } from '../utils/logger.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { ApiResponse, ApiError } from '../utils/apiResponse.js';
+import { Ticket, Event } from '../models/index.js';
+import { ticketSchema } from '../utils/validationSchemas.js';
 
-// Acquisto biglietti
-export const purchaseTicket = async (req, res) => {
-  const { eventId, quantity } = req.body;
-  const userId = req.user.id;
+// Acquista biglietti
+export const purchaseTickets = asyncHandler(async (req, res) => {
+  // Verifica ruolo utente
+  if (req.user.role !== 'user') {
+    throw new ApiError(403, 'Solo gli utenti possono acquistare biglietti');
+  }
 
-  try {
-    // Transazione per atomicità
-    await query('START TRANSACTION');
+  // Validazione input
+  const { error } = ticketSchema.validate(req.body);
+  if (error) throw new ApiError(400, error.details[0].message);
 
-    // Verifica disponibilità biglietti
-    const [event] = await query('SELECT total_tickets FROM events WHERE id = ? FOR UPDATE', [eventId]);
-    if (event.total_tickets < quantity) {
-      await query('ROLLBACK');
-      return res.status(400).json({ message: 'Biglietti insufficienti' });
+  // Transazione per atomicità
+  const result = await db.transaction(async (transaction) => {
+    const event = await Event.findById(req.body.event_id, { transaction });
+    
+    // Verifica disponibilità
+    if (event.total_tickets < req.body.quantity) {
+      throw new ApiError(400, 'Biglietti insufficienti');
     }
 
     // Aggiorna disponibilità
-    await query('UPDATE events SET total_tickets = ? WHERE id = ?', [
-      event.total_tickets - quantity, 
-      eventId
-    ]);
+    await Event.updateTicketCount(
+      event.id,
+      -req.body.quantity,
+      { transaction }
+    );
 
     // Crea biglietto
-    await query(
-      'INSERT INTO tickets (event_id, user_id, quantity) VALUES (?, ?, ?)',
-      [eventId, userId, quantity]
-    );
+    return Ticket.create({
+      event_id: event.id,
+      user_id: req.user.id,
+      quantity: req.body.quantity
+    }, { transaction });
+  });
 
-    // Crea notifica
-    await query(
-      'INSERT INTO notifications (user_id, message, type) VALUES (?, ?, ?)',
-      [userId, `Hai acquistato ${quantity} biglietto/i per l'evento ${eventId}`, 'purchase']
-    );
-
-    await query('COMMIT');
-    res.json({ message: 'Acquisto completato' });
-
-  } catch (error) {
-    await query('ROLLBACK');
-    logger.error('Errore nell\'acquisto biglietti:', error);
-    res.status(500).json({ message: 'Errore del server' });
-  }
-};
-
-// Cancella biglietto
-export const cancelTicket = async (req, res) => {
-  const ticketId = req.params.id;
-  const userId = req.user.id;
-
-  try {
-    const [ticket] = await query('SELECT * FROM tickets WHERE id = ?', [ticketId]);
-    if (!ticket || ticket.user_id !== userId) {
-      return res.status(404).json({ message: 'Biglietto non trovato' });
-    }
-
-    await query('DELETE FROM tickets WHERE id = ?', [ticketId]);
-    res.json({ message: 'Biglietto cancellato' });
-  } catch (error) {
-    logger.error('Errore nella cancellazione biglietto:', error);
-    res.status(500).json({ message: 'Errore del server' });
-  }
-};
+  res.status(201).json(
+    new ApiResponse(201, result, 'Biglietti acquistati con successo')
+  );
+});

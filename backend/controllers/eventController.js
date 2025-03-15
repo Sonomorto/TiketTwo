@@ -1,69 +1,56 @@
-import { query } from '../config/db.js';
-import { logger } from '../utils/logger.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { ApiResponse, ApiError } from '../utils/apiResponse.js';
+import { Event } from '../models/Event.js';
+import { eventSchema } from '../utils/validationSchemas.js';
 
-// Crea un evento (solo organizzatori)
-export const createEvent = async (req, res) => {
-  const { title, description, date, location, total_tickets, price, image_url } = req.body;
-  const organizerId = req.user.id;
-
-  try {
-    const result = await query(
-      `INSERT INTO events 
-      (organizer_id, title, description, date, location, total_tickets, price, image_url) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [organizerId, title, description, date, location, total_tickets, price, image_url]
-    );
-
-    res.status(201).json({ 
-      id: result.insertId, 
-      message: 'Evento creato con successo' 
-    });
-
-  } catch (error) {
-    logger.error('Errore nella creazione evento:', error);
-    res.status(500).json({ message: 'Errore del server' });
+// Crea evento (Solo organizzatori)
+export const createEvent = asyncHandler(async (req, res) => {
+  // Verifica ruolo utente
+  if (req.user.role !== 'organizer') {
+    throw new ApiError(403, 'Accesso negato: ruolo non valido');
   }
-};
 
-// Lista eventi pubblici
-export const getEvents = async (req, res) => {
-  try {
-    const events = await query(`
-      SELECT e.*, u.name AS organizer_name 
-      FROM events e
-      JOIN users u ON e.organizer_id = u.id
-      WHERE e.date > NOW()
-    `);
+  // Validazione input
+  const { error } = eventSchema.validate(req.body);
+  if (error) throw new ApiError(400, error.details[0].message);
 
-    res.json(events);
-  } catch (error) {
-    logger.error('Errore nel recupero eventi:', error);
-    res.status(500).json({ message: 'Errore del server' });
+  // Crea evento
+  const event = await Event.create({
+    ...req.body,
+    organizer_id: req.user.id
+  });
+
+  res.status(201).json(
+    new ApiResponse(201, event, 'Evento creato con successo')
+  );
+});
+
+// Lista eventi con filtri
+export const getEvents = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  
+  const events = await Event.findAllPaginated({
+    page: parseInt(page),
+    limit: parseInt(limit)
+  });
+
+  res.json(
+    new ApiResponse(200, events, 'Lista eventi recuperata')
+  );
+});
+
+// Modifica evento (Solo proprietario)
+export const updateEvent = asyncHandler(async (req, res) => {
+  const event = await Event.findById(req.params.id);
+  
+  // Verifica proprietario
+  if (event.organizer_id !== req.user.id) {
+    throw new ApiError(403, 'Non sei il proprietario di questo evento');
   }
-};
 
-// Modifica evento (solo proprietario)
-export const updateEvent = async (req, res) => {
-  const eventId = req.params.id;
-  const { title, description, date, location, total_tickets, price } = req.body;
-
-  try {
-    // Verifica proprietario
-    const [event] = await query('SELECT organizer_id FROM events WHERE id = ?', [eventId]);
-    if (event.organizer_id !== req.user.id) {
-      return res.status(403).json({ message: 'Non autorizzato' });
-    }
-
-    await query(
-      `UPDATE events 
-      SET title = ?, description = ?, date = ?, location = ?, total_tickets = ?, price = ? 
-      WHERE id = ?`,
-      [title, description, date, location, total_tickets, price, eventId]
-    );
-
-    res.json({ message: 'Evento aggiornato' });
-  } catch (error) {
-    logger.error('Errore nell\'aggiornamento evento:', error);
-    res.status(500).json({ message: 'Errore del server' });
-  }
-};
+  const updatedEvent = await Event.update(req.params.id, req.body);
+  
+  res.json(
+    new ApiResponse(200, updatedEvent, 'Evento aggiornato')
+  );
+});
