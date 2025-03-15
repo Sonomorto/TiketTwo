@@ -1,12 +1,11 @@
 import express from 'express';
-import { registerUser, loginUser } from '../controllers/authController.js';
+import { validate } from '../utils/validationSchemas.js';
+import { authSchemas } from '../utils/validationSchemas.js';
+import { register, login } from '../controllers/authController.js';
 
 const router = express.Router();
 
-// Registrazione utente/organizzatore
-router.post('/register', registerUser);
-
-// Login e generazione JWT
-router.post('/login', loginUser);
+router.post('/register', validate(authSchemas.register), register);
+router.post('/login', validate(authSchemas.login), login);
 
 export default router;
