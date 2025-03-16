@@ -1,5 +1,5 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { ApiResponse } from '../utils/apiResponse.js';
+import { ApiResponse, ApiError } from '../utils/apiResponse.js'; // Import aggiunto: ApiError
 import { User } from '../models/User.js';
 import { generateToken } from '../config/jwt.js';
 import bcrypt from 'bcryptjs';
@@ -41,10 +41,11 @@ export const login = asyncHandler(async (req, res) => {
   
   // Verifica credenziali
   const user = await User.findByEmail(email);
-  if (!user) throw new ApiError(401, 'Credenziali non valide');
+  const isValidPassword = user ? await bcrypt.compare(password, user.password) : false;
 
-  const isValidPassword = await bcrypt.compare(password, user.password);
-  if (!isValidPassword) throw new ApiError(401, 'Credenziali non valide');
+  if (!user || !isValidPassword) {
+    throw new ApiError(401, 'Email o password non validi'); // Messaggio generico
+  }
 
   // Genera token JWT
   const token = generateToken({

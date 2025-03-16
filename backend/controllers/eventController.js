@@ -29,9 +29,13 @@ export const createEvent = asyncHandler(async (req, res) => {
 export const getEvents = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
   
+  // Validazione numerica
+  const parsedPage = Math.max(1, parseInt(page)) || 1;
+  const parsedLimit = Math.max(1, parseInt(limit)) || 10;
+
   const events = await Event.findAllPaginated({
-    page: parseInt(page),
-    limit: parseInt(limit)
+    page: parsedPage,
+    limit: parsedLimit
   });
 
   res.json(
@@ -43,13 +47,24 @@ export const getEvents = asyncHandler(async (req, res) => {
 export const updateEvent = asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id);
   
+  // Verifica esistenza evento
+  if (!event) {
+    throw new ApiError(404, 'Evento non trovato');
+  }
+
   // Verifica proprietario
   if (event.organizer_id !== req.user.id) {
     throw new ApiError(403, 'Non sei il proprietario di questo evento');
   }
 
-  const updatedEvent = await Event.update(req.params.id, req.body);
-  
+  // Validazione input
+  const { error } = eventSchema.validate(req.body);
+  if (error) throw new ApiError(400, error.details[0].message);
+
+  // Aggiorna e recupera dati freschi
+  await Event.update(req.params.id, req.body);
+  const updatedEvent = await Event.findById(req.params.id);
+
   res.json(
     new ApiResponse(200, updatedEvent, 'Evento aggiornato')
   );

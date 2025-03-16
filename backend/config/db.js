@@ -24,10 +24,26 @@ async function testConnection() {
   }
 }
 
-// Funzione per eseguire query
+// Funzione per eseguire query generiche
 async function query(sql, params) {
   const [rows] = await pool.execute(sql, params);
   return rows;
 }
 
-export { pool, testConnection, query };
+// Gestione transazioni atomiche
+async function transaction(callback) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const result = await callback(connection);
+    await connection.commit();
+    return result;
+  } catch (error) {
+    await connection.rollback();
+    throw error; // Propagazione dell'errore
+  } finally {
+    connection.release();
+  }
+}
+
+export { pool, testConnection, query, transaction }; // Aggiunta transazione
