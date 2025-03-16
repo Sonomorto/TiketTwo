@@ -1,6 +1,6 @@
 import express from 'express';
 import { 
-  purchaseTicket, 
+  purchaseTickets, 
   cancelTicket, 
   getUserTickets 
 } from '../controllers/ticketController.js';
@@ -8,9 +8,13 @@ import { authenticate, authorizeUser } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Endpoint protetti (utenti registrati)
+// Endpoint per l'acquisto di biglietti (solo utenti registrati)
+router.post('/', authenticate, purchaseTickets);
+
+// Endpoint per ottenere i biglietti dell'utente (solo utenti registrati)
 router.get('/', authenticate, getUserTickets);
-router.post('/', authenticate, purchaseTicket);
+
+// Endpoint per annullare un biglietto (solo proprietario del biglietto)
 router.delete('/:id', authenticate, authorizeUser, cancelTicket);
 
 export default router;

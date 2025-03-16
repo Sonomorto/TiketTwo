@@ -1,7 +1,16 @@
 import { query } from '../config/db.js';
+import { ApiError } from '../utils/apiResponse.js'; // Import aggiunto
+
+// Tipi di notifica consentiti
+const ALLOWED_NOTIFICATION_TYPES = ['info', 'warning', 'alert'];
 
 // Crea una notifica
 async function createNotification(userId, message, type) {
+  // Validazione del tipo di notifica
+  if (!ALLOWED_NOTIFICATION_TYPES.includes(type)) {
+    throw new ApiError(400, 'Tipo di notifica non valido');
+  }
+
   const sql = `
     INSERT INTO notifications (user_id, message, type)
     VALUES (?, ?, ?)

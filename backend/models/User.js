@@ -1,7 +1,13 @@
 import { query } from '../config/db.js';
+import { ApiError } from '../utils/apiResponse.js'; // Import aggiunto per ApiError
 
 // Registra un nuovo utente
 async function createUser(name, email, password, role = 'user') {
+  // Validazione del ruolo
+  if (!['user', 'organizer'].includes(role)) {
+    throw new ApiError(400, 'Ruolo non valido. Valori consentiti: user, organizer');
+  }
+
   const sql = `
     INSERT INTO users (name, email, password, role)
     VALUES (?, ?, ?, ?)
