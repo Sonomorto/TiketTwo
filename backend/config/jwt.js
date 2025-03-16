@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { ApiError } from '../utils/apiResponse.js'; // Import aggiunto
 
 const jwtConfig = {
   secret: process.env.JWT_SECRET,
@@ -17,7 +18,7 @@ function verifyToken(token) {
   try {
     return jwt.verify(token, jwtConfig.secret);
   } catch (error) {
-    throw new Error('Token non valido o scaduto');
+    throw new ApiError(401, 'Token non valido o scaduto'); // Sostituito con ApiError
   }
 }
 

@@ -1,5 +1,6 @@
 import { verifyToken } from '../config/jwt.js';
 import { logger } from '../utils/logger.js';
+import { ApiError } from '../utils/apiResponse.js'; // Import aggiunto
 
 // Verifica JWT e autorizzazione
 export const authenticate = (roles = []) => {
@@ -7,21 +8,21 @@ export const authenticate = (roles = []) => {
     try {
       const token = req.headers.authorization?.split(' ')[1];
       if (!token) {
-        return res.status(401).json({ message: 'Token mancante' });
+        throw new ApiError(401, 'Token mancante'); // Sostituito con ApiError
       }
 
       const decoded = verifyToken(token);
-      req.user = decoded; // Aggiunge i dati dell'utente alla richiesta
+      req.user = decoded;
 
       // Controllo del ruolo (se specificato)
       if (roles.length > 0 && !roles.includes(decoded.role)) {
-        return res.status(403).json({ message: 'Accesso negato' });
+        throw new ApiError(403, 'Accesso negato'); // Sostituito con ApiError
       }
 
       next();
     } catch (error) {
       logger.error('Errore di autenticazione:', error.message);
-      res.status(401).json({ message: 'Token non valido' });
+      next(error); // Propagazione dell'errore al gestore centrale
     }
   };
 };
