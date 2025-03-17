@@ -1,6 +1,5 @@
 // utils/validationSchemas.js
 import Joi from 'joi';
-import { roles } from '../config/constants.js';
 
 // Schema base per gli ID numerici
 const idSchema = Joi.number().integer().positive().required();
@@ -33,9 +32,10 @@ export const authSchemas = {
         'string.pattern.base': 'La password deve contenere: 1 maiuscola, 1 numero e 1 carattere speciale'
       }),
 
+    // Ruoli consentiti: 'user' o 'organizer'
     role: Joi.string()
-      .valid(...Object.values(roles))
-      .default(roles.USER)
+      .valid('user', 'organizer')
+      .default('user')
   }),
 
   login: Joi.object({
