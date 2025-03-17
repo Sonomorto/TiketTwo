@@ -1,18 +1,20 @@
-import { query, transaction } from '../config/db.js'; // Import aggiunto: transaction
+import { query, transaction } from '../config/db.js'; // Import corretto
 
-// Acquista biglietti (con transazione atomica)
+// Acquista biglietti (transazione atomica)
 async function createTicket(eventId, userId, quantity) {
   return transaction(async (connection) => {
     // 1. Riduci i posti disponibili
-    await connection.query(
+    await query(
       'UPDATE events SET total_tickets = total_tickets - ? WHERE id = ?',
-      [quantity, eventId]
+      [quantity, eventId],
+      { connection } // Usa la connessione della transazione
     );
 
     // 2. Crea il ticket
-    const [result] = await connection.query(
+    const result = await query(
       'INSERT INTO tickets (event_id, user_id, quantity) VALUES (?, ?, ?)',
-      [eventId, userId, quantity]
+      [eventId, userId, quantity],
+      { connection }
     );
 
     return result.insertId;
@@ -30,4 +32,4 @@ async function getTicketsByUser(userId) {
   return await query(sql, [userId]);
 }
 
-export { createTicket, getTicketsByUser }; // Codice duplicato rimosso
+export { createTicket, getTicketsByUser };

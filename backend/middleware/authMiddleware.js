@@ -1,31 +1,34 @@
 import { verifyToken } from '../config/jwt.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { ApiError } from '../utils/apiResponse.js';
 import { logger } from '../utils/logger.js';
-import { ApiError } from '../utils/apiResponse.js'; // Import aggiunto
 
-// Verifica JWT e autorizzazione
+// Middleware per autenticazione JWT e controllo ruoli
 export const authenticate = (roles = []) => {
-  return async (req, res, next) => {
-    try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if (!token) {
-        throw new ApiError(401, 'Token mancante'); // Sostituito con ApiError
-      }
+  return asyncHandler(async (req, res, next) => {
+    // Verifica presenza token
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) throw new ApiError(401, 'Token mancante');
 
-      const decoded = verifyToken(token);
-      req.user = decoded;
+    // Decodifica e verifica token
+    const decoded = verifyToken(token);
 
-      // Controllo del ruolo (se specificato)
-      if (roles.length > 0 && !roles.includes(decoded.role)) {
-        throw new ApiError(403, 'Accesso negato'); // Sostituito con ApiError
-      }
-
-      next();
-    } catch (error) {
-      logger.error('Errore di autenticazione:', error.message);
-      next(error); // Propagazione dell'errore al gestore centrale
+    // Controllo validità del ruolo
+    if (!['user', 'organizer'].includes(decoded.role)) {
+      throw new ApiError(403, 'Ruolo utente non valido');
     }
-  };
+
+    // Autorizzazione basata sui ruoli
+    if (roles.length > 0 && !roles.includes(decoded.role)) {
+      throw new ApiError(403, 'Accesso negato: permessi insufficienti');
+    }
+
+    // Aggiunge i dati dell'utente alla richiesta
+    req.user = decoded;
+    next();
+  });
 };
 
-// Middleware per organizzatori
+// Middleware specializzati
 export const isOrganizer = authenticate(['organizer']);
+export const isUser = authenticate(['user']);
