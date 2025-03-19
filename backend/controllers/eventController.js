@@ -91,3 +91,9 @@ export const deleteEvent = asyncHandler(async (req, res) => {
     new ApiResponse(200, null, 'Evento eliminato con successo')
   );
 });
+
+// Nuovo controller per "I miei eventi"
+export const getMyEvents = asyncHandler(async (req, res) => {
+  const events = await Event.getEventsByOrganizer(req.user.id);
+  res.json(new ApiResponse(200, events, 'Lista eventi personali recuperata'));
+});

@@ -1,3 +1,4 @@
+// utils/apiResponse.js
 export class ApiResponse {
   /**
    * Crea una risposta API standardizzata
@@ -6,6 +7,15 @@ export class ApiResponse {
    * @param {string} message - Messaggio descrittivo (default: "Success")
    */
   constructor(statusCode, data, message = "Success") {
+    // Validazione degli input
+    if (typeof statusCode !== 'number') {
+      throw new Error('statusCode deve essere un numero');
+    }
+    
+    if (typeof message !== 'string') {
+      throw new Error('message deve essere una stringa');
+    }
+
     this.statusCode = statusCode;
     this.data = data;
     this.message = message;
@@ -22,8 +32,21 @@ export class ApiError extends Error {
    */
   constructor(statusCode, message, errors = []) {
     super(message);
+    
+    // Validazione degli input
+    if (typeof statusCode !== 'number') {
+      throw new Error('statusCode deve essere un numero');
+    }
+    
+    if (!Array.isArray(errors)) {
+      throw new Error('errors deve essere un array');
+    }
+
     this.statusCode = statusCode;
     this.errors = errors;
+    this.isOperational = true;
+
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 
@@ -37,5 +60,13 @@ export const validationError = (errors) => {
   if (!Array.isArray(errors)) {
     throw new Error('Il parametro "errors" deve essere un array');
   }
-  return new ApiError(422, "Errore di validazione", errors);
+  
+  return new ApiError(
+    422,
+    "Errore di validazione",
+    errors.map(err => ({
+      field: err.field,
+      message: err.message
+    }))
+  );
 };

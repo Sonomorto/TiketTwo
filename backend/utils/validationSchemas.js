@@ -1,5 +1,6 @@
 // utils/validationSchemas.js
 import Joi from 'joi';
+import { ApiError } from './apiResponse.js';
 
 // Schema base per gli ID numerici
 const idSchema = Joi.number().integer().positive().required();
@@ -32,7 +33,6 @@ export const authSchemas = {
         'string.pattern.base': 'La password deve contenere: 1 maiuscola, 1 numero e 1 carattere speciale'
       }),
 
-    // Ruoli consentiti: 'user' o 'organizer'
     role: Joi.string()
       .valid('user', 'organizer')
       .default('user')
@@ -124,21 +124,23 @@ export const pathParamSchema = Joi.object({
   id: idSchema
 });
 
-// Funzione di validazione generica
-export const validate = (schema) => (req, res, next) => {
-  const { error } = schema.validate(req, {
+// Funzione di validazione generica migliorata
+export const validate = (schema, target = 'body') => (req, res, next) => {
+  const { error } = schema.validate(req[target], {
     abortEarly: false,
-    allowUnknown: true,
+    allowUnknown: false,
     stripUnknown: true
   });
 
   if (error) {
     const errors = error.details.map(err => ({
       field: err.path.join('.'),
-      message: err.message
+      message: err.message.replace(/['"]+/g, '')
     }));
-    return next(new ApiError(422, 'Validation Error', errors));
+    return next(new ApiError(422, 'Errore di validazione', errors));
   }
 
+  // Sanitizzazione dei dati validati
+  req[target] = schema.validate(req[target]).value;
   next();
 };

@@ -19,4 +19,14 @@ router.post('/', authenticate, authorizeOrganizer, createEvent);
 router.put('/:id', authenticate, authorizeOrganizer, updateEvent);
 router.delete('/:id', authenticate, authorizeOrganizer, deleteEvent);  // Funzione deleteEvent aggiunta al controller
 
+import { getMyEvents } from '../controllers/eventController.js'; // Import aggiunto
+
+// Nuova route per gli eventi dell'organizzatore
+router.get(
+  '/my-events',
+  authenticate,
+  isOrganizer, // Middleware per ruolo organizer
+  getMyEvents
+);
+
 export default router;
