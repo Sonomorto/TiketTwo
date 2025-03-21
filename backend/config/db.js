@@ -1,5 +1,5 @@
 import mysql from 'mysql2/promise';
-import { logger } from '../utils/logger.js';
+import logger from '../utils/logger.js';
 
 // Configurazione del pool di connessioni
 const pool = mysql.createPool({

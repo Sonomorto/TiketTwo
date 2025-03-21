@@ -1,6 +1,7 @@
+// controllers/authController.js
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse, ApiError } from '../utils/apiResponse.js';
-import { User } from '../models/User.js';
+import User from '../models/User.js'; // Import default corretto
 import { generateToken } from '../config/jwt.js';
 import bcrypt from 'bcryptjs';
 import Joi from 'joi';
@@ -25,14 +26,14 @@ export const register = asyncHandler(async (req, res) => {
   if (error) throw new ApiError(400, error.details[0].message);
 
   // 2. Verifica email esistente
-  const existingUser = await User.findByEmail(req.body.email);
+  const existingUser = await User.findUserByEmail(req.body.email); // Metodo corretto
   if (existingUser) throw new ApiError(409, 'Email già registrata');
 
   // 3. Hash password
   const hashedPassword = await bcrypt.hash(req.body.password, 12);
 
   // 4. Crea utente con ruolo 'user'
-  const newUser = await User.create({
+  const newUser = await User.createUser({ // Metodo corretto
     name: req.body.name,
     email: req.body.email,
     password: hashedPassword,
@@ -45,9 +46,12 @@ export const register = asyncHandler(async (req, res) => {
     role: newUser.role
   });
 
-  // 6. Risposta
+  // 6. Risposta sicura (rimuovi password)
+  const safeUser = { ...newUser };
+  delete safeUser.password;
+
   res.status(201).json(
-    new ApiResponse(201, { user: newUser, token }, 'Registrazione completata')
+    new ApiResponse(201, { user: safeUser, token }, 'Registrazione completata')
   );
 });
 
@@ -58,7 +62,7 @@ export const login = asyncHandler(async (req, res) => {
   if (error) throw new ApiError(400, error.details[0].message);
 
   // 2. Verifica esistenza utente
-  const user = await User.findByEmail(req.body.email);
+  const user = await User.findUserByEmail(req.body.email); // Metodo corretto
   if (!user) throw new ApiError(401, 'Credenziali non valide');
 
   // 3. Confronta password
@@ -71,11 +75,12 @@ export const login = asyncHandler(async (req, res) => {
     role: user.role
   });
 
-  // 5. Rimuovi password dalla risposta
-  delete user.password;
+  // 5. Crea copia sicura dell'utente
+  const safeUser = { ...user };
+  delete safeUser.password;
 
   // 6. Risposta
   res.json(
-    new ApiResponse(200, { user, token }, 'Login effettuato')
+    new ApiResponse(200, { user: safeUser, token }, 'Login effettuato')
   );
 });

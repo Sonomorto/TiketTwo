@@ -1,3 +1,4 @@
+// models/User.js
 import { query } from '../config/db.js';
 import { ApiError } from '../utils/apiResponse.js';
 import Joi from 'joi';
@@ -10,75 +11,68 @@ const userSchema = Joi.object({
   role: Joi.string().valid('user', 'organizer').default('user')
 });
 
-// Crea un nuovo utente (ruolo 'user' di default)
+// ===============================================
+// FUNZIONALITÀ PRINCIPALI PER IL PROGETTO 4
+// ===============================================
+
+/**
+ * Crea un nuovo utente (ruolo 'user' di default)
+ * @param {Object} userData - Dati utente
+ * @returns {Promise<Object>} Utente creato
+ */
 async function createUser(userData) {
   // Validazione input con Joi
   const { error } = userSchema.validate(userData);
   if (error) throw new ApiError(400, error.details[0].message);
 
-  // Blocca registrazioni dirette come organizer
+  // Controllo ruolo per registrazioni pubbliche
   if (userData.role && userData.role !== 'user') {
-    throw new ApiError(403, 
-      'Solo gli amministratori possono creare account organizer'
-    );
+    throw new ApiError(403, 'Solo gli amministratori possono creare account organizer');
   }
 
-  // Hash password (già gestito nel controller)
-  const sql = `
-    INSERT INTO users (name, email, password, role)
-    VALUES (?, ?, ?, ?)
-  `;
-  
-  const result = await query(sql, [
+  // Query SQL per creazione utente
+  const sql = `INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)`;
+  const [result] = await query(sql, [
     userData.name,
     userData.email,
     userData.password,
-    userData.role || 'user' // Forza 'user' se non specificato
+    userData.role || 'user'
   ]);
 
-  return result.insertId;
+  return { 
+    id: result.insertId,
+    ...userData,
+    password: undefined // Rimuove la password dalla risposta
+  };
 }
 
-// Trova utente per email (usato per il login)
-async function findUserByEmail(email) {
+/**
+ * Trova utente per email (login)
+ * @param {string} email - Email da cercare
+ * @returns {Promise<Object|null>} Utente o null
+ */
+async function findByEmail(email) {
   const sql = 'SELECT * FROM users WHERE email = ?';
-  const [user] = await query(sql, [email]);
-  return user;
+  const [rows] = await query(sql, [email]);
+  return rows[0] || null;
 }
 
-// Ottieni utente per ID (esclude la password)
-async function getUserById(id) {
-  const sql = `
-    SELECT id, name, email, role, created_at 
-    FROM users WHERE id = ?
-  `;
-  const [user] = await query(sql, [id]);
-  return user;
+/**
+ * Ottieni utente per ID (senza password)
+ * @param {number} id - ID utente
+ * @returns {Promise<Object|null>} Dati utente
+ */
+async function findById(id) {
+  const sql = `SELECT id, name, email, role, created_at FROM users WHERE id = ?`;
+  const [rows] = await query(sql, [id]);
+  return rows[0] || null;
 }
 
-// Funzione per admin: crea organizer
-async function createOrganizerByAdmin(adminId, userData) {
-  // Verifica privilegi admin (da implementare altrove)
-  const isAdmin = await checkAdminPrivileges(adminId);
-  if (!isAdmin) throw new ApiError(403, 'Operazione non autorizzata');
-
-  const sql = `
-    INSERT INTO users (name, email, password, role)
-    VALUES (?, ?, ?, 'organizer')
-  `;
-  
-  const result = await query(sql, [
-    userData.name,
-    userData.email,
-    userData.password
-  ]);
-
-  return result.insertId;
-}
-
-export { 
+// ===============================================
+// EXPORT DEFAULT PER IL PROGETTO 4
+// ===============================================
+export default {
   createUser,
-  findUserByEmail,
-  getUserById,
-  createOrganizerByAdmin 
+  findByEmail,
+  findById
 };
