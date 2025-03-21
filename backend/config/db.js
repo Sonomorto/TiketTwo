@@ -1,5 +1,8 @@
 import mysql from 'mysql2/promise';
 import logger from '../utils/logger.js';
+import { config } from 'dotenv';
+
+config(); // Caricamento variabili d'ambiente
 
 // Configurazione del pool di connessioni
 const pool = mysql.createPool({

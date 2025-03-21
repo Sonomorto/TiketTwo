@@ -1,20 +1,21 @@
-// backend/routes/eventRoutes.js
+// routes/eventRoutes.js
 import express from 'express';
-import { 
-  createEvent, 
-  updateEvent, 
-  deleteEvent, 
+import {
+  createEvent,
+  updateEvent,
+  deleteEvent,
   getEvents,
   getEventById,
-  getMyEvents
+  getMyEvents,
+  checkAvailability
 } from '../controllers/eventController.js';
 import { authenticate, authorizeOrganizer } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // Endpoint pubblici
-router.get('/', getEvents);               // Lista eventi con filtri e paginazione
-router.get('/:id', getEventById);         // Dettagli singolo evento
+router.get('/', getEvents);
+router.get('/:id', getEventById);
 
 // Endpoint protetti per organizzatori
 router.post(
@@ -38,7 +39,7 @@ router.delete(
   deleteEvent
 );
 
-// Endpoint eventi personali organizzatore
+// Endpoint personali organizzatore
 router.get(
   '/my/events',
   authenticate,
@@ -46,12 +47,11 @@ router.get(
   getMyEvents
 );
 
-// Endpoint ricerca avanzata (esempio aggiuntivo)
-router.get(
-  '/search/advanced',
-  async (req, res) => {
-    // Implementazione personalizzata se necessaria
-  }
+// Verifica disponibilità biglietti
+router.post(
+  '/check-availability',
+  authenticate,
+  checkAvailability
 );
 
 export default router;

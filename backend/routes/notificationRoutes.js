@@ -1,16 +1,37 @@
+// routes/notificationRoutes.js
 import express from 'express';
 import { 
   getNotifications,
-  createNotification // Funzione aggiunta
+  createNotification,
+  markAsRead
 } from '../controllers/notificationController.js';
-import { authenticate } from '../middleware/authMiddleware.js';
+import { authenticate, authorizeOrganizer } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Recupera notifiche utente
+// ===============================================
+// ENDPOINT PER LA GESTIONE DELLE NOTIFICHE
+// ===============================================
+
+/**
+ * @route   GET /api/v1/notifications
+ * @desc    Recupera tutte le notifiche dell'utente
+ * @access  Privato (Utente/Organizer)
+ */
 router.get('/', authenticate, getNotifications);
 
-// Crea una nuova notifica (es: per admin/organizzatori)
-router.post('/', authenticate, createNotification); // Endpoint aggiunto
+/**
+ * @route   POST /api/v1/notifications
+ * @desc    Crea una nuova notifica (solo organizzatori)
+ * @access  Privato (Organizer)
+ */
+router.post('/', authenticate, authorizeOrganizer, createNotification);
+
+/**
+ * @route   PATCH /api/v1/notifications/:id/read
+ * @desc    Marca una notifica come letta
+ * @access  Privato (Utente/Organizer)
+ */
+router.patch('/:id/read', authenticate, markAsRead);
 
 export default router;

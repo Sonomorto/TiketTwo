@@ -2,10 +2,17 @@
 import Joi from 'joi';
 import { ApiError } from './apiResponse.js';
 
-// Schema base per gli ID numerici
-const idSchema = Joi.number().integer().positive().required();
+// ===============================================
+// SCHEMI BASE
+// ===============================================
+const idSchema = Joi.number().integer().positive().required().messages({
+  'number.base': 'ID deve essere un numero valido',
+  'number.positive': 'ID deve essere un valore positivo'
+});
 
-// Schemi principali
+// ===============================================
+// SCHEMI PER AUTENTICAZIONE
+// ===============================================
 export const authSchemas = {
   register: Joi.object({
     name: Joi.string()
@@ -22,7 +29,7 @@ export const authSchemas = {
       .email({ tlds: { allow: false } })
       .required()
       .messages({
-        'string.email': 'Email non valida'
+        'string.email': 'Formato email non valido'
       }),
 
     password: Joi.string()
@@ -30,12 +37,8 @@ export const authSchemas = {
       .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
       .required()
       .messages({
-        'string.pattern.base': 'La password deve contenere: 1 maiuscola, 1 numero e 1 carattere speciale'
-      }),
-
-    role: Joi.string()
-      .valid('user', 'organizer')
-      .default('user')
+        'string.pattern.base': 'La password deve contenere: 1 maiuscola, 1 numero e 1 carattere speciale (@$!%*?&)'
+      })
   }),
 
   login: Joi.object({
@@ -44,12 +47,18 @@ export const authSchemas = {
   })
 };
 
+// ===============================================
+// SCHEMI PER GESTIONE EVENTI (Progetto 4)
+// ===============================================
 export const eventSchemas = {
   create: Joi.object({
     title: Joi.string()
       .min(5)
       .max(100)
-      .required(),
+      .required()
+      .messages({
+        'string.empty': 'Il titolo è obbligatorio'
+      }),
 
     description: Joi.string()
       .min(20)
@@ -61,23 +70,33 @@ export const eventSchemas = {
       .min('now')
       .required()
       .messages({
-        'date.min': 'La data non può essere nel passato'
+        'date.min': 'La data deve essere futura',
+        'date.format': 'Formato data non valido (YYYY-MM-DDTHH:mm:ssZ)'
       }),
 
     location: Joi.string()
       .pattern(/^[a-zA-Z0-9\s,.-]+$/)
-      .required(),
+      .required()
+      .messages({
+        'string.pattern.base': 'Caratteri non validi nella località'
+      }),
 
     total_tickets: Joi.number()
       .integer()
       .min(1)
       .max(10000)
-      .required(),
+      .required()
+      .messages({
+        'number.min': 'Deve esserci almeno 1 biglietto disponibile'
+      }),
 
     price: Joi.number()
       .precision(2)
       .positive()
-      .required(),
+      .required()
+      .messages({
+        'number.positive': 'Il prezzo deve essere un valore positivo'
+      }),
 
     image_url: Joi.string()
       .uri()
@@ -94,6 +113,9 @@ export const eventSchemas = {
   }).min(1)
 };
 
+// ===============================================
+// SCHEMI PER BIGLIETTI (Progetto 4)
+// ===============================================
 export const ticketSchemas = {
   purchase: Joi.object({
     event_id: idSchema,
@@ -112,21 +134,11 @@ export const ticketSchemas = {
   })
 };
 
-export const notificationSchemas = {
-  get: Joi.object({
-    page: Joi.number().integer().min(1).default(1),
-    limit: Joi.number().integer().min(1).max(100).default(10)
-  })
-};
-
-// Schema per validazione parametri URL
-export const pathParamSchema = Joi.object({
-  id: idSchema
-});
-
-// Funzione di validazione generica migliorata
+// ===============================================
+// FUNZIONE DI VALIDAZIONE GENERICA
+// ===============================================
 export const validate = (schema, target = 'body') => (req, res, next) => {
-  const { error } = schema.validate(req[target], {
+  const { error, value } = schema.validate(req[target], {
     abortEarly: false,
     allowUnknown: false,
     stripUnknown: true
@@ -140,7 +152,6 @@ export const validate = (schema, target = 'body') => (req, res, next) => {
     return next(new ApiError(422, 'Errore di validazione', errors));
   }
 
-  // Sanitizzazione dei dati validati
-  req[target] = schema.validate(req[target]).value;
+  req[target] = value;
   next();
 };

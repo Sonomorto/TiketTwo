@@ -1,9 +1,7 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse, ApiError } from '../utils/apiResponse.js';
 import { Ticket, Event, Notification } from '../models/index.js';
-import { ticketSchema } from '../utils/validationSchemas.js';
-import { transaction } from '../config/db.js';
-
+import { ticketSchemas } from '../utils/validationSchemas.js';
 // Acquista biglietti (con notifica integrata)
 export const purchaseTickets = asyncHandler(async (req, res) => {
   // Verifica ruolo utente
