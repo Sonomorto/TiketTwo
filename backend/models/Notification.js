@@ -6,19 +6,6 @@ import { ApiError } from '../utils/apiResponse.js';
 const ALLOWED_TYPES = ['info', 'warning', 'alert'];
 const MAX_MESSAGE_LENGTH = 500;
 
-// Schema della tabella notifications (per riferimento):
-/*
-CREATE TABLE notifications (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  user_id INT NOT NULL,
-  message VARCHAR(500) NOT NULL,
-  type ENUM('info', 'warning', 'alert') DEFAULT 'info',
-  is_read BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
-*/
-
 // ===============================================
 // FUNZIONALITÀ PRINCIPALI
 // ===============================================
