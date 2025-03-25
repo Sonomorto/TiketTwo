@@ -3,146 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TiketTwo - Piattaforma Professionale per Eventi</title>
+    <title>TiketTwo - Gestione Eventi e Biglietti</title>
     <link rel="stylesheet" href="landing_pagestyles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Navbar con controllo utente -->
+    <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
-            <a href="#" class="logo">
-                <i class="fas fa-ticket-alt"></i>
-                TiketTwo
-            </a>
-            <div class="nav-links" id="navLinks">
-                <a href="#home"><i class="fas fa-home"></i> Home</a>
-                <a href="#events"><i class="fas fa-calendar-star"></i> Eventi</a>
-                <a href="#dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
-                <div class="user-menu">
-                    <a href="#" class="btn-login"><i class="fas fa-sign-in-alt"></i> Accedi</a>
-                    <div class="dropdown">
-                        <a href="#" class="btn-signup"><i class="fas fa-user-plus"></i> Registrati</a>
-                        <div class="dropdown-content">
-                            <a href="#"><i class="fas fa-user"></i> Partecipante</a>
-                            <a href="#"><i class="fas fa-building"></i> Organizzatore</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <i class="fas fa-bars mobile-menu" id="mobileMenu"></i>
+            <a href="#" class="logo">TiketTwo</a>
+            <ul class="nav-links">
+                <li><a href="#features">Funzionalità</a></li>
+                <li><a href="#events">Eventi</a></li>
+                <li><a href="#contact">Contatti</a></li>
+            </ul>
         </div>
     </nav>
 
-    <!-- Hero Section con CTA specifici -->
-    <section class="hero" id="home">
+    <!-- Hero Section -->
+    <header class="hero">
         <div class="container">
             <div class="hero-content">
-                <div class="hero-text">
-                    <h1>Trasforma la Gestione dei Tuoi Eventi</h1>
-                    <p>Piattaforma completa per organizzatori e partecipanti</p>
-                    <div class="cta-container">
-                        <a href="#create-event" class="btn-organizer">
-                            <i class="fas fa-plus-circle"></i> Crea Evento
-                        </a>
-                        <a href="#events" class="btn-attendee">
-                            <i class="fas fa-ticket"></i> Acquista Biglietti
-                        </a>
-                    </div>
-                </div>
-                <div class="hero-illustration">
-                    <img src="event-platform.svg" alt="Piattaforma eventi">
+                <h1>La tua piattaforma per eventi indimenticabili</h1>
+                <p>Crea, gestisci e partecipa agli eventi più esclusivi della tua città</p>
+                <div class="cta-buttons">
+                    <a href="#events" class="btn primary">Scopri gli eventi</a>
+                    <a href="#contact" class="btn secondary">Crea evento</a>
                 </div>
             </div>
         </div>
-    </section>
+    </header>
 
-    <!-- Sezione Funzionalità Organizzatori -->
-    <section class="organizer-tools" id="organizers">
+    <!-- Features Section -->
+    <section id="features" class="features">
         <div class="container">
-            <h2>Strumenti per Organizzatori</h2>
-            <div class="tool-grid">
-                <div class="tool-card">
-                    <div class="tool-icon">
-                        <i class="fas fa-qrcode"></i>
-                    </div>
-                    <h3>Gestione Biglietti</h3>
-                    <ul>
-                        <li>QR Code verificabile</li>
-                        <li>Controllo accessi in tempo reale</li>
-                        <li>Stampa personalizzata</li>
-                    </ul>
+            <h2>Perché scegliere EventFlow?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon">🎟️</div>
+                    <h3>Biglietteria Digitale</h3>
+                    <p>Acquista e gestisci i biglietti direttamente dalla piattaforma</p>
                 </div>
-                
-                <div class="tool-card">
-                    <div class="tool-icon">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <h3>Analisi Dati</h3>
-                    <ul>
-                        <li>Vendite in tempo reale</li>
-                        <li>Demografia partecipanti</li>
-                        <li>Report personalizzabili</li>
-                    </ul>
+                <div class="feature-card">
+                    <div class="icon">📅</div>
+                    <h3>Calendario Integrato</h3>
+                    <p>Organizza e sincronizza tutti i tuoi eventi preferiti</p>
                 </div>
-
-                <div class="tool-card">
-                    <div class="tool-icon">
-                        <i class="fas fa-money-check-alt"></i>
-                    </div>
-                    <h3>Pagamenti Integrati</h3>
-                    <ul>
-                        <li>Gateway multipli</li>
-                        <li>Rimborsi automatizzati</li>
-                        <li>Split payment</li>
-                    </ul>
+                <div class="feature-card">
+                    <div class="icon">🔒</div>
+                    <h3>Sicurezza Garantita</h3>
+                    <p>Transazioni protette e verifica partecipanti</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Sezione Eventi in Primo Piano -->
-    <section class="featured-events" id="events">
+    <!-- Footer -->
+    <footer class="footer">
         <div class="container">
-            <h2>Prossimi Eventi</h2>
-            <div class="event-filters">
-                <button class="filter-btn active">Tutti</button>
-                <button class="filter-btn">Concerti</button>
-                <button class="filter-btn">Conferenze</button>
-                <button class="filter-btn">Sport</button>
-            </div>
-            <div class="events-grid" id="eventsContainer">
-                <!-- Dinamico via JS -->
+            <p>&copy; 2024 EventFlow. Tutti i diritti riservati</p>
+            <div class="social-links">
+                <a href="https://www.instagram.com/tikettwo.it/">Facebook</a>
+                <a href="https://www.instagram.com/tikettwo.it/">Instagram</a>
             </div>
         </div>
-    </section>
-
-    <!-- Sezione Biglietteria Digitale -->
-    <section class="digital-tickets">
-        <div class="container">
-            <div class="ticket-preview">
-                <div class="ticket-design">
-                    <div class="ticket-qr"></div>
-                    <div class="ticket-info">
-                        <h3>Biglietto VIP</h3>
-                        <p>Evento: Concerto di Beneficenza</p>
-                        <p>Data: 15 Settembre 2024</p>
-                    </div>
-                </div>
-            </div>
-            <div class="ticket-features">
-                <h2>Biglietteria Digitale Avanzata</h2>
-                <ul>
-                    <li><i class="fas fa-mobile-alt"></i> Biglietti nel portafoglio digitale</li>
-                    <li><i class="fas fa-bell"></i> Notifiche in tempo reale</li>
-                    <li><i class="fas fa-shield-alt"></i> Verifica antifrode</li>
-                    <li><i class="fas fa-sync"></i> Riscatto multiplo</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <script src="app.js"></script>
+    </footer>
 </body>
 </html>

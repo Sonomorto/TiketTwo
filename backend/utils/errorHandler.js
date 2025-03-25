@@ -3,22 +3,6 @@ import { ApiError } from './apiResponse.js';
 import logger from './logger.js';
 import { pool } from '../config/db.js';
 
-// Struttura tabella error_logs consigliata:
-/*
-CREATE TABLE error_logs (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-  message VARCHAR(255) NOT NULL,
-  status_code INT NOT NULL,
-  path VARCHAR(255) NOT NULL,
-  method VARCHAR(10) NOT NULL,
-  stack TEXT,
-  user_id INT DEFAULT NULL,
-  ip_address VARCHAR(45),
-  environment VARCHAR(20)
-);
-*/
-
 export const errorHandler = async (err, req, res, next) => {
   let error = err;
   const environment = process.env.NODE_ENV || 'development';
