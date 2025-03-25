@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventFlow - Gestione Eventi</title>
+    <link rel="stylesheet" href="landing_pagestyles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="logo">EventFlow</a>
+            <div class="nav-links" id="navLinks">
+                <a href="#home">Home</a>
+                <a href="#events">Eventi</a>
+                <a href="#features">Funzionalità</a>
+                <a href="#" class="btn-login">Login</a>
+                <a href="#" class="btn-signup">Registrati</a>
+            </div>
+            <i class="fas fa-bars mobile-menu" id="mobileMenu"></i>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Gestisci e Partecipa agli Eventi</h1>
+                <p>Prenota biglietti per i migliori eventi nella tua città</p>
+                <a href="#events" class="btn-primary">Scopri gli Eventi</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Eventi in Evidenza -->
+    <section class="events" id="events">
+        <div class="container">
+            <h2>Eventi in Programma</h2>
+            <div class="events-grid" id="eventsContainer">
+                <!-- Event cards verranno generate dinamicamente via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 EventFlow. Tutti i diritti riservati</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
