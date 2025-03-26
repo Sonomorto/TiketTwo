@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TiketTwo - Gestione Eventi e Biglietti</title>
+  <link rel="icon" type="image/png" href="../Designer.jpeg">
+  <link rel="stylesheet" href="landing_pagestyles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="#" class="logo">TiketTwo</a>
+      <!-- Pulsante per menu mobile -->
+      <button class="mobile-menu-button">☰</button>
+      <ul class="nav-links">
+        <li><a href="#features">Funzionalità</a></li>
+        <li><a href="#events">Eventi</a></li>
+        <li><a href="#contact">Contatti</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>La tua piattaforma per eventi indimenticabili</h1>
+        <p>Crea, gestisci e partecipa agli eventi più esclusivi della tua città</p>
+        <div class="cta-buttons">
+          <a href="#events" class="btn primary">Scopri gli eventi</a>
+          <a href="#contact" class="btn secondary">Crea evento</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="container">
+      <h2>Perché scegliere TiketTwo?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="icon">🎟️</div>
+          <h3>Biglietteria Digitale</h3>
+          <p>Acquista e gestisci i biglietti direttamente dalla piattaforma</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📅</div>
+          <h3>Calendario Integrato</h3>
+          <p>Organizza e sincronizza tutti i tuoi eventi preferiti</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🔒</div>
+          <h3>Sicurezza Garantita</h3>
+          <p>Transazioni protette e verifica partecipanti</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Events Section (aggiunta per il caricamento dinamico) -->
+  <section id="events" class="events">
+    <div class="container">
+      <h2>Eventi in Arrivo</h2>
+      <div id="events-grid">
+        <!-- Qui il JS caricherà dinamicamente le card degli eventi -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section (aggiunta per il form di contatto) -->
+  <section id="contact" class="contact">
+    <div class="container">
+      <h2>Contattaci</h2>
+      <form id="contact-form">
+        <label for="name">Nome</label>
+        <input type="text" id="name" name="name" required>
+        
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+        
+        <label for="message">Messaggio</label>
+        <textarea id="message" name="message" required></textarea>
+        
+        <button type="submit" class="btn primary">Invia</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 TiketTwo. Tutti i diritti sono riservati alla società</p>
+      <div class="social-links">
+        <a href="https://www.facebook.com/tikettwo.it/">Facebook</a>
+        <a href="https://www.instagram.com/tikettwo.it/">Instagram</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Includi lo script -->
+  <script src="landing_pagescript.js"></script>
+</body>
+</html>
