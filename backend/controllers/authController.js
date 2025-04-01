@@ -2,9 +2,11 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse, ApiError } from '../utils/apiResponse.js';
 import User from '../models/User.js'; // Import default corretto
-import { generateToken } from '../config/jwt.js';
+import { generateToken, generateRefreshToken, verifyRefreshToken } from '../config/jwt.js';
 import bcrypt from 'bcryptjs';
 import Joi from 'joi';
+import { query } from '../config/db.js';
+import logger from '../utils/logger.js';
 
 // Schema Joi per la registrazione (senza campo 'role')
 const registerSchema = Joi.object({
@@ -19,68 +21,187 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
-// Registrazione utente (solo ruolo 'user' di default)
-export const register = asyncHandler(async (req, res) => {
-  // 1. Validazione input
-  const { error } = registerSchema.validate(req.body);
-  if (error) throw new ApiError(400, error.details[0].message);
+// Registrazione utente
+export async function register(req, res, next) {
+  try {
+    const { email, password, nome, cognome, ruolo } = req.body;
 
-  // 2. Verifica email esistente
-  const existingUser = await User.findUserByEmail(req.body.email); // Metodo corretto
-  if (existingUser) throw new ApiError(409, 'Email già registrata');
+    // Validazione input
+    if (!email || !password || !nome || !cognome) {
+      throw new ApiError(400, 'Tutti i campi sono obbligatori');
+    }
 
-  // 3. Hash password
-  const hashedPassword = await bcrypt.hash(req.body.password, 12);
+    // Verifica email già esistente
+    const existingUser = await query(
+      'SELECT id FROM utenti WHERE email = ?',
+      [email]
+    );
 
-  // 4. Crea utente con ruolo 'user'
-  const newUser = await User.createUser({ // Metodo corretto
-    name: req.body.name,
-    email: req.body.email,
-    password: hashedPassword,
-    role: 'user' // Forzato a 'user' per registrazioni pubbliche
-  });
+    if (existingUser.length > 0) {
+      throw new ApiError(409, 'Email già registrata');
+    }
 
-  // 5. Genera token JWT
-  const token = generateToken({
-    id: newUser.id,
-    role: newUser.role
-  });
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-  // 6. Risposta sicura (rimuovi password)
-  const safeUser = { ...newUser };
-  delete safeUser.password;
+    // Inserimento utente
+    const result = await query(
+      'INSERT INTO utenti (email, password, nome, cognome, ruolo) VALUES (?, ?, ?, ?, ?)',
+      [email, hashedPassword, nome, cognome, ruolo || 'utente']
+    );
 
-  res.status(201).json(
-    new ApiResponse(201, { user: safeUser, token }, 'Registrazione completata')
-  );
-});
+    logger.info(`Nuovo utente registrato: ${email}`);
 
-// Login utente/organizzatore
-export const login = asyncHandler(async (req, res) => {
-  // 1. Validazione input
-  const { error } = loginSchema.validate(req.body);
-  if (error) throw new ApiError(400, error.details[0].message);
+    res.status(201).json({
+      status: 'success',
+      message: 'Utente registrato con successo',
+      data: { id: result.insertId }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
-  // 2. Verifica esistenza utente
-  const user = await User.findUserByEmail(req.body.email); // Metodo corretto
-  if (!user) throw new ApiError(401, 'Credenziali non valide');
+// Login utente
+export async function login(req, res, next) {
+  try {
+    const { email, password } = req.body;
 
-  // 3. Confronta password
-  const isValidPassword = await bcrypt.compare(req.body.password, user.password);
-  if (!isValidPassword) throw new ApiError(401, 'Credenziali non valide');
+    // Validazione input
+    if (!email || !password) {
+      throw new ApiError(400, 'Email e password sono obbligatori');
+    }
 
-  // 4. Genera token JWT
-  const token = generateToken({
-    id: user.id,
-    role: user.role
-  });
+    // Verifica utente
+    const users = await query(
+      'SELECT * FROM utenti WHERE email = ?',
+      [email]
+    );
 
-  // 5. Crea copia sicura dell'utente
-  const safeUser = { ...user };
-  delete safeUser.password;
+    if (users.length === 0) {
+      throw new ApiError(401, 'Credenziali non valide');
+    }
 
-  // 6. Risposta
-  res.json(
-    new ApiResponse(200, { user: safeUser, token }, 'Login effettuato')
-  );
-});
+    const user = users[0];
+
+    // Verifica password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      throw new ApiError(401, 'Credenziali non valide');
+    }
+
+    // Genera token
+    const token = generateToken({ 
+      id: user.id, 
+      email: user.email,
+      ruolo: user.ruolo 
+    });
+
+    // Genera refresh token
+    const refreshToken = generateRefreshToken({ 
+      id: user.id 
+    });
+
+    // Aggiorna refresh token nel database
+    await query(
+      'UPDATE utenti SET refresh_token = ? WHERE id = ?',
+      [refreshToken, user.id]
+    );
+
+    logger.info(`Utente loggato: ${email}`);
+
+    res.json({
+      status: 'success',
+      data: {
+        token,
+        refreshToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          nome: user.nome,
+          cognome: user.cognome,
+          ruolo: user.ruolo
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Refresh token
+export async function refreshToken(req, res, next) {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      throw new ApiError(400, 'Refresh token mancante');
+    }
+
+    // Verifica refresh token
+    const decoded = verifyRefreshToken(refreshToken);
+
+    // Verifica refresh token nel database
+    const users = await query(
+      'SELECT * FROM utenti WHERE id = ? AND refresh_token = ?',
+      [decoded.id, refreshToken]
+    );
+
+    if (users.length === 0) {
+      throw new ApiError(401, 'Refresh token non valido');
+    }
+
+    const user = users[0];
+
+    // Genera nuovo token
+    const newToken = generateToken({ 
+      id: user.id, 
+      email: user.email,
+      ruolo: user.ruolo 
+    });
+
+    // Genera nuovo refresh token
+    const newRefreshToken = generateRefreshToken({ 
+      id: user.id 
+    });
+
+    // Aggiorna refresh token nel database
+    await query(
+      'UPDATE utenti SET refresh_token = ? WHERE id = ?',
+      [newRefreshToken, user.id]
+    );
+
+    res.json({
+      status: 'success',
+      data: {
+        token: newToken,
+        refreshToken: newRefreshToken
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Logout
+export async function logout(req, res, next) {
+  try {
+    const userId = req.user.id;
+
+    // Rimuovi refresh token
+    await query(
+      'UPDATE utenti SET refresh_token = NULL WHERE id = ?',
+      [userId]
+    );
+
+    logger.info(`Utente disconnesso: ${userId}`);
+
+    res.json({
+      status: 'success',
+      message: 'Logout effettuato con successo'
+    });
+  } catch (error) {
+    next(error);
+  }
+}
