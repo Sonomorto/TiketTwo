@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHub - Gestione Evento</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <h1 class="logo">🎟️ EventHub</h1>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-item">Dashboard</a>
+                <button class="btn-logout" id="btnLogout">Logout</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h2 class="section-title" id="formTitle">Crea Nuovo Evento</h2>
+        
+        <form id="eventForm" class="event-form">
+            <div class="form-group">
+                <label for="title">Titolo Evento*</label>
+                <input type="text" id="title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Descrizione</label>
+                <textarea id="description" rows="4"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date">Data e Ora*</label>
+                    <input type="datetime-local" id="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Luogo*</label>
+                    <input type="text" id="location" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category">Categoria*</label>
+                    <select id="category" required>
+                        <option value="">Seleziona</option>
+                        <option value="concerto">Concerto</option>
+                        <option value="teatro">Teatro</option>
+                        <option value="sport">Sport</option>
+                        <option value="altro">Altro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tickets">Biglietti Disponibili*</label>
+                    <input type="number" id="tickets" min="1" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="image">URL Immagine</label>
+                <input type="url" id="image">
+                <small>Incolla l'URL di un'immagine</small>
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit" class="btn-primary" id="submitBtn">Salva Evento</button>
+                <a href="/dashboard.html" class="btn-cancel">Annulla</a>
+            </div>
+
+            <div id="formMessage" class="form-message"></div>
+        </form>
+    </main>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api/v1';
+        const token = localStorage.getItem('token');
+        
+        // Controllo autenticazione e ruolo
+        if(!token) {
+            window.location.href = '/auth.html';
+        }
+
+        // Recupera ID evento da URL se in modalità modifica
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('id');
+        let isEditMode = !!eventId;
+
+        // Elementi DOM
+        const form = document.getElementById('eventForm');
+        const formTitle = document.getElementById('formTitle');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Carica dati evento esistente
+        const loadEventData = async () => {
+            if(!isEditMode) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if(!response.ok) throw new Error('Evento non trovato');
+                
+                const event = await response.json();
+                populateForm(event);
+            } catch(error) {
+                showMessage(error.message, 'error');
+            }
+        };
+
+        // Popola il form con i dati
+        const populateForm = (event) => {
+            document.getElementById('title').value = event.title;
+            document.getElementById('description').value = event.description;
+            document.getElementById('date').value = event.date.split('.')[0]; // Formatta datetime-local
+            document.getElementById('location').value = event.location;
+            document.getElementById('category').value = event.category;
+            document.getElementById('tickets').value = event.availableTickets;
+            document.getElementById('image').value = event.image || '';
+            
+            formTitle.textContent = 'Modifica Evento';
+            submitBtn.textContent = 'Aggiorna Evento';
+        };
+
+        // Gestione submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const eventData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                date: document.getElementById('date').value,
+                location: document.getElementById('location').value,
+                category: document.getElementById('category').value,
+                availableTickets: parseInt(document.getElementById('tickets').value),
+                image: document.getElementById('image').value
+            };
+
+            try {
+                const url = isEditMode 
+                    ? `${API_BASE_URL}/events/${eventId}`
+                    : `${API_BASE_URL}/events`;
+
+                const response = await fetch(url, {
+                    method: isEditMode ? 'PUT' : 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(eventData)
+                });
+
+                const data = await response.json();
+                
+                if(!response.ok) throw new Error(data.message || 'Errore nel salvataggio');
+                
+                window.location.href = '/dashboard.html';
+            } catch(error) {
+                showMessage(error.message, 'error');
+            }
+        });
+
+        // Mostra messaggi
+        const showMessage = (text, type = 'info') => {
+            const messageEl = document.getElementById('formMessage');
+            messageEl.textContent = text;
+            messageEl.className = `form-message ${type}`;
+            setTimeout(() => messageEl.textContent = '', 5000);
+        };
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', () => {
+            if(isEditMode) loadEventData();
+        });
+
+        // Logout
+        document.getElementById('btnLogout').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html>

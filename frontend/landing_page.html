@@ -1,109 +1,118 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TiketTwo - Gestione Eventi e Biglietti</title>
-  <link rel="icon" type="image/png" href="../Designer.jpeg">
-  <link rel="stylesheet" href="landing_pagestyles.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicketTwo - Scopri Eventi</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="#" class="logo">TiketTwo</a>
-      <!-- Pulsante per menu mobile -->
-      <button class="mobile-menu-button">☰</button>
-      <ul class="nav-links">
-        <li><a href="#features">Funzionalità</a></li>
-        <li><a href="#events">Eventi</a></li>
-        <li><a href="#contact">Contatti</a></li>
-      </ul>
-    </div>
-  </nav>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <h1 class="logo">🎟️ TicketTwo</h1>
+            <div class="nav-links">
+                <a href="/landing_page.html" class="nav-item active">Home</a>
+                <a href="/auth.html" class="nav-item" id="authLink">Login/Registrati</a>
+                <a href="/dashboard.html" class="nav-item">Dashboard</a>
+                <span class="user-greeting" id="userGreeting"></span>
+                <button class="btn-logout" id="btnLogout">Logout</button>
+            </div>
+        </nav>
+    </header>
 
-  <!-- Hero Section -->
-  <header class="hero">
-    <div class="container">
-      <div class="hero-content">
-        <h1>La tua piattaforma per eventi indimenticabili</h1>
-        <p>Crea, gestisci e partecipa agli eventi più esclusivi della tua città</p>
-        <div class="cta-buttons">
-          <a href="#events" class="btn primary">Scopri gli eventi</a>
-          <a href="#contact" class="btn secondary">Crea evento</a>
+    <!-- Filtri -->
+    <section class="filters">
+        <div class="filter-group">
+            <label for="category">Categoria:</label>
+            <select id="category" class="filter-select">
+                <option value="">Tutte</option>
+                <option value="concerto">Concerti</option>
+                <option value="teatro">Teatro</option>
+                <option value="sport">Sport</option>
+            </select>
         </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Features Section -->
-  <section id="features" class="features">
-    <div class="container">
-      <h2>Perché scegliere TiketTwo?</h2>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="icon">🎟️</div>
-          <h3>Biglietteria Digitale</h3>
-          <p>Acquista e gestisci i biglietti direttamente dalla piattaforma</p>
-        </div>
-        <div class="feature-card">
-          <div class="icon">📅</div>
-          <h3>Calendario Integrato</h3>
-          <p>Organizza e sincronizza tutti i tuoi eventi preferiti</p>
-        </div>
-        <div class="feature-card">
-          <div class="icon">🔒</div>
-          <h3>Sicurezza Garantita</h3>
-          <p>Transazioni protette e verifica partecipanti</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Events Section (aggiunta per il caricamento dinamico) -->
-  <section id="events" class="events">
-    <div class="container">
-      <h2>Eventi in Arrivo</h2>
-      <div id="events-grid">
-        <!-- Qui il JS caricherà dinamicamente le card degli eventi -->
-      </div>
-    </div>
-  </section>
-
-  <!-- Contact Section (aggiunta per il form di contatto) -->
-  <section id="contact" class="contact">
-    <div class="container">
-      <h2>Contattaci</h2>
-      <form id="contact-form">
-        <label for="name">Nome</label>
-        <input type="text" id="name" name="name" required>
         
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required>
-        
-        <label for="message">Messaggio</label>
-        <textarea id="message" name="message" required></textarea>
-        
-        <button type="submit" class="btn primary">Invia</button>
-      </form>
-    </div>
-  </section>
+        <div class="filter-group">
+            <label for="date">Data:</label>
+            <input type="date" id="date" class="filter-date">
+        </div>
+    </section>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <p>&copy; 2024 TiketTwo. Tutti i diritti sono riservati alla società</p>
-      <div class="social-links">
-        <a href="https://www.facebook.com/tikettwo.it/">Facebook</a>
-        <a href="https://www.instagram.com/tikettwo.it/">Instagram</a>
-      </div>
-    </div>
-  </footer>
+    <!-- Lista Eventi -->
+    <main class="container">
+        <h2 class="section-title">Eventi in programma</h2>
+        <div class="events-grid" id="eventsContainer">
+            <!-- Eventi verranno popolati via JS -->
+            <div class="loader">Caricamento eventi...</div>
+        </div>
+    </main>
 
-  <!-- Includi lo script -->
-  <script src="landing_pagescript.js"></script>
+    <script>
+        // Configurazione
+        const API_BASE_URL = 'http://localhost:3000/api/v1';
+        const eventsContainer = document.getElementById('eventsContainer');
+        const categoryFilter = document.getElementById('category');
+        const dateFilter = document.getElementById('date');
+
+        // Controllo autenticazione
+        const updateAuthUI = () => {
+            const token = localStorage.getItem('token');
+            document.getElementById('authLink').style.display = token ? 'none' : 'block';
+            document.getElementById('btnLogout').style.display = token ? 'block' : 'none';
+        };
+
+        // Fetch Eventi
+        const loadEvents = async () => {
+            try {
+                const params = new URLSearchParams({
+                    category: categoryFilter.value,
+                    date: dateFilter.value
+                });
+
+                const response = await fetch(`${API_BASE_URL}/events?${params}`);
+                if (!response.ok) throw new Error('Errore nel caricamento');
+                
+                const events = await response.json();
+                renderEvents(events);
+            } catch (error) {
+                eventsContainer.innerHTML = `<div class="error">${error.message}</div>`;
+            }
+        };
+
+        // Render Eventi
+        const renderEvents = (events) => {
+            eventsContainer.innerHTML = events.length > 0 
+                ? events.map(event => `
+                    <div class="event-card">
+                        <img src="${event.image || 'placeholder.jpg'}" class="event-image" alt="${event.title}">
+                        <div class="event-info">
+                            <h3>${event.title}</h3>
+                            <p class="event-date">📅 ${new Date(event.date).toLocaleDateString()}</p>
+                            <p class="event-location">📍 ${event.location}</p>
+                            <p class="event-category">🏷️ ${event.category}</p>
+                            <p class="event-tickets">🎫 Biglietti disponibili: ${event.availableTickets}</p>
+                            <a href="/event-details.html?id=${event._id}" class="btn-details">Dettagli</a>
+                        </div>
+                    </div>
+                `).join('')
+                : '<div class="empty">Nessun evento trovato</div>';
+        };
+
+        // Event Listeners
+        categoryFilter.addEventListener('change', loadEvents);
+        dateFilter.addEventListener('change', loadEvents);
+        
+        document.getElementById('btnLogout').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.reload();
+        });
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            loadEvents();
+        });
+    </script>
 </body>
 </html>
