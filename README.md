@@ -10,7 +10,7 @@ TicketTwo è un'applicazione web per la gestione completa degli eventi che perme
 - 🎫 Ricerca e prenotazione biglietti per eventi
 - 📱 Ricezione notifiche per conferme e aggiornamenti
 - 📅 Sezione "I miei eventi" per gestire le prenotazioni
-- 🎟️ QR code per la verifica dei biglietti
+- 🎟️ Codice alfanumerico univoco di 18 cifre per la verifica dei biglietti
 
 ### Per gli Organizzatori
 - 🎭 Creazione e gestione completa degli eventi
