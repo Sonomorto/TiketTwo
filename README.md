@@ -60,7 +60,7 @@ npm install --save-dev nodemon jest supertest
 
 4. Avvia l'applicazione:
 ```bash
-npm start
+node app.js
 ```
 
 ## Struttura del Progetto
